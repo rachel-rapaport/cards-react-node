@@ -10,8 +10,9 @@ function CardList() {
   const [newCardText, setNewCardText] = useState("");
   const [newCardColor, setNewCardColor] = useState("");
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [draggedCardIndex, setDraggedCardIndex] = useState(null);
 
-  //get cards when the page rander
+  //get cards when the page render
   useEffect(() => {
     getCards();
   }, []);
@@ -34,7 +35,7 @@ function CardList() {
   //update card
   const updateCard = (index, card) => {
     axios
-      .put(`http://localhost:5000/cards/${card.id}`, card)
+      .put(`http://localhost:5000/cards/update/${card.id}`, card)
       .then((response) => {
         const updatedCards = [...cards];
         updatedCards[index] = card;
@@ -69,7 +70,7 @@ function CardList() {
     axios
       .delete(`http://localhost:5000/cards/${cardId}`)
       .then((response) => {
-        const cardsDelete = cards.filter((card) => card.id != cardId);
+        const cardsDelete = cards.filter((card) => card.id !== cardId);
         setCards(cardsDelete);
         console.log("Card deleted successfully:", response.data);
       })
@@ -118,18 +119,58 @@ function CardList() {
     setIsAdding(false);
   };
 
+  //updates the moves array on server
+  const updateMoveCards = (index) => {
+    axios
+      .put("http://localhost:5000/cards/reorder", {
+        fromIndex: draggedCardIndex,
+        toIndex: index,
+      })
+      .then((response) => {
+        console.log(response.data.message);
+      })
+      .catch((error) => {
+        console.error("Error updating card order:", error);
+      });
+  };
+
+  //saves the index of the dragged card
+  const handleDragStart = (index) => {
+    setDraggedCardIndex(index);
+  };
+
+  //updates the array when the card finish moved
+  const handleDrop = (index) => {
+    if (draggedCardIndex === null || draggedCardIndex === index) return;
+    updateMoveCards(index);
+    const newCards = [...cards];
+    const draggedCard = newCards[draggedCardIndex];
+    newCards.splice(draggedCardIndex, 1);
+    newCards.splice(index, 0, draggedCard);
+    setCards(newCards);
+    setDraggedCardIndex(null);
+  };
+
   return (
     <div className="card-list">
       {cards.map((card, index) => (
-        <Card
-          key={index}
-          text={card.text}
-          color={card.color}
-          onChangeColor={(newColor) => updateCardColor(index, card, newColor)}
-          onClickDelete={() => deleteCard(card.id)}
-          onUpdateText={(newText) => handleUpdateText(index, newText)}
-        />
+        <div
+          key={card.id}
+          draggable //can the card move
+          onDragStart={() => handleDragStart(index)}
+          onDragOver={(e) => e.preventDefault()} //when the card over other element,to privent resistance
+          onDrop={() => handleDrop(index)} //
+        >
+          <Card
+            text={card.text}
+            color={card.color}
+            onChangeColor={(newColor) => updateCardColor(index, card, newColor)}
+            onClickDelete={() => deleteCard(card.id)}
+            onUpdateText={(newText) => handleUpdateText(index, newText)}
+          />
+        </div>
       ))}
+
       {isAdding ? (
         <div className="card add-card">
           <input
@@ -139,11 +180,7 @@ function CardList() {
             onChange={(e) => setNewCardText(e.target.value)}
           />
           {showColorPicker && (
-            <ColorPicker
-              onColorSelect={(color) => {
-                setNewCardColor(color);
-              }}
-            />
+            <ColorPicker onColorSelect={(color) => setNewCardColor(color)} />
           )}
           <div className="button-group">
             <button onClick={handleSave}>Save</button>

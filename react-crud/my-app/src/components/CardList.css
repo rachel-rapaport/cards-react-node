@@ -1,12 +1,12 @@
 .card-list {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
     gap: 20px;
-    flex-wrap: wrap;
-}
+  }
 
 .card {
     width: 200px;
-    height: a;
+    height: auto;
     border: 1px solid #ccc;
     border-radius: 8px;
     display: block;
@@ -54,6 +54,6 @@ input{
 }
 
 .button-group button:last-child {
-    background-color: #f44336; /* צבע אדום לכפתור ביטול */
+    background-color: #f44336; 
     color: white;
 }

@@ -61,13 +61,12 @@ function Card({ text, color, onChangeColor, onClickDelete, onUpdateText }) {
       )}
 
       <div className="color-circle" onClick={handleColorClick}></div>
-
+      
       {showDelete && (
         <button className="delete-button" onClick={() => onClickDelete()}>
           🗑️
         </button>
       )}
-      
       {showColor && <ColorPicker onColorSelect={handleColorSelect} />}
     </div>
   );

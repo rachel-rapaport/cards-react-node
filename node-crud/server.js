@@ -84,10 +84,8 @@ app.put("/cards/reorder", (req, res) => {
     return res.status(400).json({ message: "Invalid indices" });
   }
   if (
-    fromIndex < 0 ||
-    fromIndex >= cards.length ||
-    toIndex < 0 ||
-    toIndex >= cards.length
+    fromIndex < 0 || fromIndex >= cards.length ||
+    toIndex < 0 || toIndex >= cards.length
   ) {
     return res.status(400).json({ message: "Index out of bounds" });
   }
